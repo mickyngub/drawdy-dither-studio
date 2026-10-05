@@ -4,7 +4,7 @@ Turn an image into a halftone on your Drawdy board: upload it to Dither Studio, 
 
 ## How to use
 
-1. Click the Dither Studio button (white dots on a blue-to-red tile) on the right of the board.
+1. Click the Dither Studio button (white dots on a blue tile) on the right of the board.
 2. Click the preview and pick an image file, or drop or paste one into the panel. Until you do, the preview shows a sample shape and **Place on board** stays off. Once an image is in, hovering the preview shows **Click to change image**.
 3. Shape the result on the right:
    - **Style**: Dots (marks inside each cell) or Pixels (whole cells). In Pixels, **Colour** picks one ink or the source's own colours.

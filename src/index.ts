@@ -8,7 +8,7 @@ import type { DriverToWebview, Rect, WebviewToDriver } from "./shared/messages";
 import { WEBVIEW_HTML } from "./webview-html";
 
 // Drawdy shows this through <img>, where currentColor is black, so the colours are explicit.
-const ACTION_BUTTON_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#698CF9"/><stop offset="1" stop-color="#ff4d4d"/></linearGradient></defs><rect x="1" y="1" width="22" height="22" rx="6" fill="url(#g)"/><g fill="#ffffff" transform="translate(12 12) scale(0.72) translate(-12 -12)"><circle cx="5" cy="5" r="1.1"/><circle cx="12" cy="5" r="1.9"/><circle cx="19" cy="5" r="1.1"/><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="3.1"/><circle cx="19" cy="12" r="1.9"/><circle cx="5" cy="19" r="1.1"/><circle cx="12" cy="19" r="1.9"/><circle cx="19" cy="19" r="1.1"/></g></svg>`;
+const ACTION_BUTTON_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18"><rect x="1" y="1" width="22" height="22" rx="6" fill="#698CF9"/><g fill="#ffffff" transform="translate(12 12) scale(0.72) translate(-12 -12)"><circle cx="5" cy="5" r="1.1"/><circle cx="12" cy="5" r="1.9"/><circle cx="19" cy="5" r="1.1"/><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="3.1"/><circle cx="19" cy="12" r="1.9"/><circle cx="5" cy="19" r="1.1"/><circle cx="12" cy="19" r="1.9"/><circle cx="19" cy="19" r="1.1"/></g></svg>`;
 
 const PARAMS_KV_KEY = "params";
 const PLACE_WIDTH = 480;
