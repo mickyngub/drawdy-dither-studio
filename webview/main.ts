@@ -13,7 +13,6 @@ import {
 import { autoPolarity } from "./lib/polarity";
 import { proceduralBlob } from "./lib/procedural";
 import {
-    fillSegmented,
     makeColourRow,
     makeRule,
     makeSegmented,
@@ -48,12 +47,10 @@ const hint = document.getElementById("hint") as HTMLDivElement;
 const hintText = document.getElementById("hint-text") as HTMLSpanElement;
 const panel = document.getElementById("panel") as HTMLElement;
 const statusLine = document.getElementById("status") as HTMLSpanElement;
-const exportSeg = document.getElementById("export-scale") as HTMLDivElement;
 const placeButton = document.getElementById("place") as HTMLButtonElement;
 const uploadInput = document.getElementById("upload-input") as HTMLInputElement;
 
 let params: Params = { ...DEFAULTS };
-let exportScale = 1;
 let uploaded = false;
 let sourceCount = 0;
 let paramsTimer = 0;
@@ -225,17 +222,6 @@ function buildPanel(): void {
 }
 
 function buildFooter(): void {
-    fillSegmented<number>(
-        exportSeg,
-        [
-            [1, "1x"],
-            [2, "2x"],
-        ],
-        exportScale,
-        (scale) => {
-            exportScale = scale;
-        }
-    );
     placeButton.addEventListener("click", () => void place());
     stage.addEventListener("click", () => uploadInput.click());
     stage.addEventListener("keydown", (event) => {
@@ -259,7 +245,7 @@ async function place(): Promise<void> {
     setStatus("Rendering…");
     placeButton.disabled = true;
     try {
-        const png = await engine.exportPng(exportScale);
+        const png = await engine.exportPng(1);
         if (!png) {
             setStatus("The render could not be encoded.", "bad");
             return;

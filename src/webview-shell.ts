@@ -254,12 +254,6 @@ footer {
     background: var(--drawdy-surface, transparent);
 }
 footer .grow { flex: 1; min-width: 0; }
-footer .lbl {
-    font-size: 10px;
-    white-space: nowrap;
-    color: var(--drawdy-muted-foreground, #7a7a7a);
-}
-footer .seg { flex: none; }
 .status {
     font-size: 10px;
     color: var(--drawdy-muted-foreground, #7a7a7a);
@@ -297,8 +291,6 @@ const BODY = `
     <aside class="panel" id="panel"></aside>
 </div>
 <footer>
-    <span class="lbl">Export size</span>
-    <div class="seg" id="export-scale"></div>
     <span class="status grow" id="status"></span>
     <input type="file" id="upload-input" accept="image/*" hidden />
     <button class="btn primary" id="place" disabled>Place on board</button>

@@ -14,7 +14,7 @@ Turn an image into a halftone on your Drawdy board: upload it to Dither Studio, 
    - Sliders for grid (cells across), cell size, dot size, vignette, posterize, levels (Pixels only), gamma, floor, ceiling and softness.
    - **Ink** and **Paper** colours: a swatch or any colour you pick.
    - **Reset** goes back to the defaults; the line next to it counts cells and dots.
-4. Pick an **Export size** (1x or 2x, at most 2048 px on the longest side), then click **Place on board**. The image lands in the middle of your view, 480 px wide.
+4. Click **Place on board**. The image lands in the middle of your view, 480 px wide, as a PNG of at most 2048 px on its longest side.
 5. What lands on the board is one PNG image element. The board then moves to it. Upload another image any time to start again. Press Escape to close the panel.
 
 Your settings are remembered for next time; the export size is not.
