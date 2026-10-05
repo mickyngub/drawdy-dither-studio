@@ -100,12 +100,6 @@ button, input, select { font: inherit; color: inherit; }
         border-left: none;
         border-top: 1px solid var(--drawdy-border, #e5e5e5);
     }
-    footer {
-        flex-wrap: wrap;
-        gap: 8px 10px;
-    }
-    footer .status { flex: 1 1 auto; text-align: right; }
-    footer .btn { flex: 1 1 calc(50% - 5px); }
 }
 
 .panel {
@@ -247,13 +241,16 @@ input[type="color"] {
 footer {
     flex: none;
     border-top: 1px solid var(--drawdy-border, #e5e5e5);
-    padding: 8px 12px;
+    padding: 10px 12px;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
     background: var(--drawdy-surface, transparent);
 }
-footer .grow { flex: 1; min-width: 0; }
+footer .status { text-align: center; }
+footer .status:empty { display: none; }
+footer .btn { width: 100%; padding: 8px 12px; font-size: 12px; }
 .status {
     font-size: 10px;
     color: var(--drawdy-muted-foreground, #7a7a7a);
@@ -291,7 +288,7 @@ const BODY = `
     <aside class="panel" id="panel"></aside>
 </div>
 <footer>
-    <span class="status grow" id="status"></span>
+    <span class="status" id="status"></span>
     <input type="file" id="upload-input" accept="image/*" hidden />
     <button class="btn primary" id="place" disabled>Place on board</button>
 </footer>

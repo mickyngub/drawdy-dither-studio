@@ -72,7 +72,7 @@ function queueParams(): void {
 
 function setStatus(text: string, tone: "" | "good" | "bad" = ""): void {
     statusLine.textContent = text;
-    statusLine.className = `status grow${tone ? ` ${tone}` : ""}`;
+    statusLine.className = `status${tone ? ` ${tone}` : ""}`;
 }
 
 function setHint(text: string | null): void {
