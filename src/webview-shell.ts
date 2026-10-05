@@ -32,7 +32,24 @@ button, input, select { font: inherit; color: inherit; }
     padding: 14px;
     background: var(--drawdy-background, #ffffff);
     overflow: hidden;
+    cursor: pointer;
 }
+.stage:focus-visible { outline: 2px solid var(--drawdy-primary, #4f46e5); outline-offset: -2px; }
+.pick {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.5);
+    color: #ffffff;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 120ms ease;
+    pointer-events: none;
+}
+.stage:hover .pick, .stage:focus-visible .pick { opacity: 1; }
+.stage.empty .pick { display: none; }
 .stage canvas {
     display: block;
     max-width: 100%;
@@ -272,9 +289,10 @@ footer .seg { flex: none; }
 
 const BODY = `
 <div class="app">
-    <div class="stage" id="stage">
+    <div class="stage empty" id="stage" role="button" tabindex="0" aria-label="Upload an image">
         <canvas id="canvas"></canvas>
         <div class="hint" id="hint" hidden><span id="hint-text"></span></div>
+        <div class="pick"><span>Click to change image</span></div>
     </div>
     <aside class="panel" id="panel"></aside>
 </div>
@@ -283,7 +301,6 @@ const BODY = `
     <div class="seg" id="export-scale"></div>
     <span class="status grow" id="status"></span>
     <input type="file" id="upload-input" accept="image/*" hidden />
-    <button class="btn" id="upload">Upload image</button>
     <button class="btn primary" id="place" disabled>Place on board</button>
 </footer>
 `;

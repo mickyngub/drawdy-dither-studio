@@ -38,7 +38,7 @@ type DrawdyWebviewApi = {
 declare function acquireDrawdyApi(): DrawdyWebviewApi;
 
 const PARAMS_DEBOUNCE_MS = 400;
-const UPLOAD_HINT = "Upload an image to start, or drop or paste one here.";
+const UPLOAD_HINT = "Click to upload an image, or drop or paste one here.";
 
 const api = acquireDrawdyApi();
 
@@ -50,7 +50,6 @@ const panel = document.getElementById("panel") as HTMLElement;
 const statusLine = document.getElementById("status") as HTMLSpanElement;
 const exportSeg = document.getElementById("export-scale") as HTMLDivElement;
 const placeButton = document.getElementById("place") as HTMLButtonElement;
-const uploadButton = document.getElementById("upload") as HTMLButtonElement;
 const uploadInput = document.getElementById("upload-input") as HTMLInputElement;
 
 let params: Params = { ...DEFAULTS };
@@ -238,7 +237,12 @@ function buildFooter(): void {
         }
     );
     placeButton.addEventListener("click", () => void place());
-    uploadButton.addEventListener("click", () => uploadInput.click());
+    stage.addEventListener("click", () => uploadInput.click());
+    stage.addEventListener("keydown", (event) => {
+        if (event.key !== "Enter" && event.key !== " ") return;
+        event.preventDefault();
+        uploadInput.click();
+    });
     uploadInput.addEventListener("change", () => {
         const file = uploadInput.files?.[0];
         uploadInput.value = "";
@@ -299,6 +303,8 @@ function adoptSource(el: HTMLCanvasElement): void {
     controls.invert?.set(params.invert);
     uploaded = true;
     placeButton.disabled = false;
+    stage.classList.remove("empty");
+    stage.setAttribute("aria-label", "Change image");
     setHint(null);
 }
 
