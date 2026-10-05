@@ -4,27 +4,14 @@ import type {
     DriverModule,
     ModuleStyling,
 } from "@drawdy/driver-protocol";
-import type {
-    DriverToWebview,
-    PlaceMode,
-    Rect,
-    WebviewToDriver,
-} from "./shared/messages";
+import type { DriverToWebview, Rect, WebviewToDriver } from "./shared/messages";
 import { WEBVIEW_HTML } from "./webview-html";
 
 const ACTION_BUTTON_SVG = `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" class="text-white/70"><circle cx="5" cy="5" r="1.1"/><circle cx="12" cy="5" r="1.9"/><circle cx="19" cy="5" r="1.1"/><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="3.1"/><circle cx="19" cy="12" r="1.9"/><circle cx="5" cy="19" r="1.1"/><circle cx="12" cy="19" r="1.9"/><circle cx="19" cy="19" r="1.1"/></svg>`;
 
 const PARAMS_KV_KEY = "params";
-const MENU_ID = "mickyngub.dither-studio:menu";
-const BESIDE_GAP = 40;
-const FALLBACK_WIDTH = 480;
+const PLACE_WIDTH = 480;
 const FLY_DURATION_MS = 350;
-
-type PendingSource = {
-    png: Blob;
-    sourceIds: string[];
-    rect: Rect | null;
-};
 
 let requestId = 0;
 
@@ -38,7 +25,6 @@ let driver: {
     webviewHtml: string | null;
     webviewOpen: boolean;
     params: Record<string, unknown> | null;
-    source: PendingSource | null;
 } | null = null;
 
 let chain: Promise<void> = Promise.resolve();
@@ -90,7 +76,6 @@ export const activate: DriverModule["activate"] = async ({
         webviewHtml: null,
         webviewOpen: false,
         params: null,
-        source: null,
     };
     const { driverId } = manifest;
 
@@ -102,25 +87,12 @@ export const activate: DriverModule["activate"] = async ({
     });
     if (created.res.error !== undefined) return;
 
-    await issueCommand({
-        type: "command:context-menu:add",
-        driverId,
-        requestId: nextRequestId(),
-        req: { menuId: MENU_ID, menuTitle: "Dither Studio…" },
-    });
-
     await Promise.all([
         issueCommand({
             type: "subscription:dom:element-clicked",
             driverId,
             requestId: nextRequestId(),
             req: { domElementId: driver.actionButtonId },
-        }),
-        issueCommand({
-            type: "subscription:context-menu:clicked",
-            driverId,
-            requestId: nextRequestId(),
-            req: { menuId: MENU_ID },
         }),
         issueCommand({
             type: "subscription:webview:message",
@@ -154,12 +126,7 @@ export const onEvent: DriverModule["onEvent"] = async (event) => {
     switch (event.type) {
         case "subscription:dom:element-clicked": {
             if (event.body.domElementId !== driver.actionButtonId) return;
-            await enqueue(captureSelection);
-            return;
-        }
-        case "subscription:context-menu:clicked": {
-            if (event.body.menuId !== MENU_ID) return;
-            await enqueue(captureSelection);
+            await enqueue(openWebview);
             return;
         }
         case "subscription:webview:message": {
@@ -201,74 +168,12 @@ async function openWebview(): Promise<void> {
     if (driver) driver.webviewOpen = true;
 }
 
-async function captureSelection(): Promise<void> {
-    if (!driver) return;
-    const { driverId } = driver.manifest;
-
-    const selected = await driver.issueCommand({
-        type: "command:scene:get-current-selected-drawdy-elements",
-        driverId,
-        requestId: nextRequestId(),
-    });
-    if (!driver) return;
-    const sourceIds =
-        selected.res.error === undefined
-            ? selected.res.value.drawdyElementIds
-            : [];
-    if (sourceIds.length === 0) {
-        driver.source = null;
-        await openWebview();
-        post({ type: "no-selection" });
-        return;
-    }
-
-    const combined = await driver.issueCommand({
-        type: "command:scene:query-combined-rect",
-        driverId,
-        requestId: nextRequestId(),
-        req: { drawdyElementIds: sourceIds },
-    });
-    if (!driver) return;
-    const rect =
-        combined.res.error === undefined ? combined.res.value.rect : null;
-    if (!rect) {
-        driver.source = null;
-        await openWebview();
-        post({ type: "no-selection" });
-        return;
-    }
-
-    const shot = await driver.issueCommand({
-        type: "command:scene:capture-screenshot",
-        driverId,
-        requestId: nextRequestId(),
-        req: { area: rect },
-    });
-    if (!driver) return;
-    if (shot.res.error !== undefined) {
-        await openWebview();
-        post({
-            type: "error",
-            message: "The board could not export that selection.",
-        });
-        return;
-    }
-
-    driver.source = { png: shot.res.value.png, sourceIds, rect };
-    await openWebview();
-    if (!driver?.source) return;
-    post({ type: "source", ...driver.source });
-}
-
 async function handleWebviewMessage(message: WebviewToDriver): Promise<void> {
     if (!driver) return;
     switch (message.type) {
         case "ready": {
             driver.webviewOpen = true;
             post({ type: "init", params: driver.params ?? undefined });
-            if (driver.source) {
-                post({ type: "source", ...driver.source });
-            }
             return;
         }
         case "params": {
@@ -288,12 +193,7 @@ async function handleWebviewMessage(message: WebviewToDriver): Promise<void> {
         }
         case "place": {
             await enqueue(() =>
-                place(
-                    message.dataUrl,
-                    message.pixelWidth,
-                    message.pixelHeight,
-                    message.mode
-                )
+                place(message.dataUrl, message.pixelWidth, message.pixelHeight)
             );
             return;
         }
@@ -310,7 +210,7 @@ async function handleWebviewMessage(message: WebviewToDriver): Promise<void> {
     }
 }
 
-async function fallbackOrigin(width: number, height: number): Promise<Rect> {
+async function viewCentredRect(width: number, height: number): Promise<Rect> {
     if (!driver) return { x: 0, y: 0, width, height };
     const res = await driver.issueCommand({
         type: "command:camera:get-viewport-rect",
@@ -330,8 +230,7 @@ async function fallbackOrigin(width: number, height: number): Promise<Rect> {
 async function place(
     dataUrl: string,
     pixelWidth: number,
-    pixelHeight: number,
-    mode: PlaceMode
+    pixelHeight: number
 ): Promise<void> {
     if (!driver) return;
     if (
@@ -344,25 +243,10 @@ async function place(
         return;
     }
 
-    const source = driver.source;
-    const aspect = pixelHeight / pixelWidth;
-    const width = source?.rect ? source.rect.width : FALLBACK_WIDTH;
-    const height = width * aspect;
-
-    let x: number;
-    let y: number;
-    if (source?.rect) {
-        x =
-            mode === "replace"
-                ? source.rect.x
-                : source.rect.x + source.rect.width + BESIDE_GAP;
-        y = source.rect.y;
-    } else {
-        const origin = await fallbackOrigin(width, height);
-        if (!driver) return;
-        x = origin.x;
-        y = origin.y;
-    }
+    const width = PLACE_WIDTH;
+    const height = width * (pixelHeight / pixelWidth);
+    const { x, y } = await viewCentredRect(width, height);
+    if (!driver) return;
 
     const drawdyElementId = driver.generateId();
     const added = await driver.issueCommand({
@@ -380,10 +264,7 @@ async function place(
                     width,
                     height,
                     meta: {
-                        [driver.manifest.driverId]: {
-                            from: source?.sourceIds ?? [],
-                            at: Date.now(),
-                        },
+                        [driver.manifest.driverId]: { at: Date.now() },
                     },
                 },
             ],
@@ -393,17 +274,6 @@ async function place(
     if (added.res.error !== undefined) {
         post({ type: "error", message: "The board rejected that image." });
         return;
-    }
-
-    if (mode === "replace" && source && source.sourceIds.length > 0) {
-        await driver.issueCommand({
-            type: "command:scene:remove-drawdy-elements",
-            driverId: driver.manifest.driverId,
-            requestId: nextRequestId(),
-            req: { drawdyElementIds: source.sourceIds },
-        });
-        if (!driver) return;
-        driver.source = { ...source, sourceIds: [] };
     }
 
     await driver.issueCommand({

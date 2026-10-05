@@ -282,8 +282,9 @@ const BODY = `
     <span class="lbl">Export size</span>
     <div class="seg" id="export-scale"></div>
     <span class="status grow" id="status"></span>
-    <button class="btn" id="place-replace" disabled>Replace selection</button>
-    <button class="btn primary" id="place-beside">Place beside</button>
+    <input type="file" id="upload-input" accept="image/*" hidden />
+    <button class="btn" id="upload">Upload image</button>
+    <button class="btn primary" id="place" disabled>Place on board</button>
 </footer>
 `;
 

@@ -1,7 +1,7 @@
 {
     "name": "drawdy-dither-studio",
     "version": "1.0.0",
-    "description": "Dither Studio for Drawdy: turn any selection into a halftone dot field and place it back on the board.",
+    "description": "Dither Studio for Drawdy: turn an uploaded image into a halftone dot field and place it on the board.",
     "license": "MIT",
     "private": true,
     "type": "module",

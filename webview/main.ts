@@ -38,8 +38,7 @@ type DrawdyWebviewApi = {
 declare function acquireDrawdyApi(): DrawdyWebviewApi;
 
 const PARAMS_DEBOUNCE_MS = 400;
-const NO_SELECTION_HINT =
-    "Select something on the board, then click Dither Studio. Or drop an image here.";
+const UPLOAD_HINT = "Upload an image to start, or drop or paste one here.";
 
 const api = acquireDrawdyApi();
 
@@ -50,16 +49,13 @@ const hintText = document.getElementById("hint-text") as HTMLSpanElement;
 const panel = document.getElementById("panel") as HTMLElement;
 const statusLine = document.getElementById("status") as HTMLSpanElement;
 const exportSeg = document.getElementById("export-scale") as HTMLDivElement;
-const besideButton = document.getElementById(
-    "place-beside"
-) as HTMLButtonElement;
-const replaceButton = document.getElementById(
-    "place-replace"
-) as HTMLButtonElement;
+const placeButton = document.getElementById("place") as HTMLButtonElement;
+const uploadButton = document.getElementById("upload") as HTMLButtonElement;
+const uploadInput = document.getElementById("upload-input") as HTMLInputElement;
 
 let params: Params = { ...DEFAULTS };
 let exportScale = 1;
-let boardSource = false;
+let uploaded = false;
 let sourceCount = 0;
 let paramsTimer = 0;
 
@@ -241,18 +237,23 @@ function buildFooter(): void {
             exportScale = scale;
         }
     );
-    besideButton.addEventListener("click", () => void place("beside"));
-    replaceButton.addEventListener("click", () => void place("replace"));
+    placeButton.addEventListener("click", () => void place());
+    uploadButton.addEventListener("click", () => uploadInput.click());
+    uploadInput.addEventListener("change", () => {
+        const file = uploadInput.files?.[0];
+        uploadInput.value = "";
+        if (!file || !file.type.startsWith("image/")) return;
+        void adoptUpload(file);
+    });
 }
 
-async function place(mode: "beside" | "replace"): Promise<void> {
-    if (!engine.getSource()) {
-        setStatus("Nothing to place yet.", "bad");
+async function place(): Promise<void> {
+    if (!uploaded) {
+        setStatus("Upload an image first.", "bad");
         return;
     }
     setStatus("Rendering…");
-    besideButton.disabled = true;
-    replaceButton.disabled = true;
+    placeButton.disabled = true;
     try {
         const png = await engine.exportPng(exportScale);
         if (!png) {
@@ -264,12 +265,10 @@ async function place(mode: "beside" | "replace"): Promise<void> {
             dataUrl: png.dataUrl,
             pixelWidth: png.width,
             pixelHeight: png.height,
-            mode,
         });
         setStatus("Placing…");
     } finally {
-        besideButton.disabled = false;
-        replaceButton.disabled = !boardSource;
+        placeButton.disabled = false;
     }
 }
 
@@ -288,23 +287,30 @@ function mergeParams(raw: unknown): Params {
     return merged as unknown as Params;
 }
 
-function adoptSource(el: HTMLCanvasElement, fromBoard: boolean): void {
+function adoptSource(el: HTMLCanvasElement): void {
     sourceCount += 1;
     const source: Source = {
         id: `dither-studio-${sourceCount}-${Date.now()}`,
-        name: fromBoard ? "selection" : "dropped image",
+        name: "uploaded image",
         el,
     };
     engine.setSource(source);
     commit({ invert: autoPolarity(el) }, false);
     controls.invert?.set(params.invert);
-    boardSource = fromBoard;
-    replaceButton.disabled = !fromBoard;
+    uploaded = true;
+    placeButton.disabled = false;
     setHint(null);
 }
 
-async function adoptBlob(blob: Blob, fromBoard: boolean): Promise<void> {
-    const bitmap = await createImageBitmap(blob);
+async function adoptUpload(file: File): Promise<void> {
+    setStatus("");
+    let bitmap: ImageBitmap;
+    try {
+        bitmap = await createImageBitmap(file);
+    } catch {
+        setStatus("That file could not be read as an image.", "bad");
+        return;
+    }
     const target = document.createElement("canvas");
     target.width = bitmap.width;
     target.height = bitmap.height;
@@ -312,7 +318,7 @@ async function adoptBlob(blob: Blob, fromBoard: boolean): Promise<void> {
     if (!context) return;
     context.drawImage(bitmap, 0, 0);
     bitmap.close();
-    adoptSource(target, fromBoard);
+    adoptSource(target);
 }
 
 function imageFileFrom(items: DataTransfer | null): File | null {
@@ -338,15 +344,13 @@ function wireDropAndPaste(): void {
         stage.classList.remove("dragover");
         const file = imageFileFrom(event.dataTransfer);
         if (!file) return;
-        setStatus("");
-        void adoptBlob(file, false);
+        void adoptUpload(file);
     });
     document.addEventListener("paste", (event) => {
         const file = imageFileFrom(event.clipboardData);
         if (!file) return;
         event.preventDefault();
-        setStatus("");
-        void adoptBlob(file, false);
+        void adoptUpload(file);
     });
     document.addEventListener("keydown", (event) => {
         if (event.key !== "Escape") return;
@@ -361,17 +365,6 @@ function handle(message: DriverToWebview): void {
             engine.setParams(params);
             pushControls();
             engine.requestRender();
-            return;
-        }
-        case "source": {
-            setStatus("");
-            void adoptBlob(message.png, true).then(() => engine.render());
-            return;
-        }
-        case "no-selection": {
-            boardSource = false;
-            replaceButton.disabled = true;
-            setHint(NO_SELECTION_HINT);
             return;
         }
         case "placed": {
@@ -394,7 +387,7 @@ engine.setSource({
     name: "placeholder",
     el: proceduralBlob(),
 });
-setHint(NO_SELECTION_HINT);
+setHint(UPLOAD_HINT);
 engine.render();
 
 api.onMessage((raw) => {

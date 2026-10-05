@@ -93,7 +93,6 @@
                         window.__driverLog.push(message);
                         if (message && message.type === "place") {
                             window.__lastPlace = {
-                                mode: message.mode,
                                 pixelWidth: message.pixelWidth,
                                 pixelHeight: message.pixelHeight,
                                 dataUrlPrefix: String(
@@ -116,19 +115,20 @@
                                 listener({ type: "init", params: undefined });
                             write("-> sent init");
                             void sourceBlob().then((png) => {
-                                listener &&
-                                    listener({
-                                        type: "source",
-                                        png,
-                                        sourceIds: ["stub-element"],
-                                        rect: {
-                                            x: 0,
-                                            y: 0,
-                                            width: 300,
-                                            height: 200,
-                                        },
-                                    });
-                                write("-> sent source (300x200 png blob)");
+                                const doc =
+                                    document.getElementById(
+                                        "host"
+                                    ).contentDocument;
+                                const input = doc.getElementById("upload-input");
+                                const files = new DataTransfer();
+                                files.items.add(
+                                    new File([png], "stub.png", {
+                                        type: "image/png",
+                                    })
+                                );
+                                input.files = files.files;
+                                input.dispatchEvent(new Event("change"));
+                                write("-> uploaded stub.png (300x200)");
                             });
                         }
                     },

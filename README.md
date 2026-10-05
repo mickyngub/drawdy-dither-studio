@@ -1,11 +1,11 @@
 # Dither Studio
 
-Turn anything on your Drawdy board into a halftone: select it, open Dither Studio, tune the dots or pixels in a live preview, then place the result back on the board as an image.
+Turn an image into a halftone on your Drawdy board: upload it to Dither Studio, tune the dots or pixels in a live preview, then place the result on the board as an image.
 
 ## How to use
 
-1. Select one or more elements on the board, then click the nine-dot Dither Studio button on the right of the board, or right-click and choose **Dither Studio…**.
-2. The panel opens with a snapshot of your selection, drawn as a dot field. With nothing selected, the panel asks you to select something and click again; you can also drop or paste an image into it.
+1. Click the Dither Studio button (white dots on a blue-to-red tile) on the right of the board.
+2. Click **Upload image** and pick an image file, or drop or paste one into the panel. Until you do, the preview shows a sample shape and **Place on board** stays off.
 3. Shape the result on the right:
    - **Style**: Dots (marks inside each cell) or Pixels (whole cells). In Pixels, **Colour** picks one ink or the source's own colours.
    - **Dither**: Floyd–Steinberg, Bayer 4, Bayer 8, Blue noise or Hard.
@@ -14,17 +14,14 @@ Turn anything on your Drawdy board into a halftone: select it, open Dither Studi
    - Sliders for grid (cells across), cell size, dot size, vignette, posterize, levels (Pixels only), gamma, floor, ceiling and softness.
    - **Ink** and **Paper** colours: a swatch or any colour you pick.
    - **Reset** goes back to the defaults; the line next to it counts cells and dots.
-4. Pick an **Export size** (1x or 2x, at most 2048 px on the longest side), then:
-   - **Place beside** puts the image 40 px to the right of the selection, as wide as the selection.
-   - **Replace selection** puts it where the selection was and removes the selected elements. It is only on for a selection from the board.
-   If the panel was opened with nothing selected, the image lands in the middle of your view, 480 px wide.
-5. What lands on the board is one PNG image element. The board then moves to it. Press Escape to close the panel.
+4. Pick an **Export size** (1x or 2x, at most 2048 px on the longest side), then click **Place on board**. The image lands in the middle of your view, 480 px wide.
+5. What lands on the board is one PNG image element. The board then moves to it. Upload another image any time to start again. Press Escape to close the panel.
 
 Your settings are remembered for next time; the export size is not.
 
 ## Good to know
 
-- The panel loads nothing from the network. The snapshot comes from the board and every dot is drawn in the panel itself.
+- The panel loads nothing from the network. Your image stays in the panel, every dot is drawn there, and only the finished PNG goes onto the board.
 - Settings are saved with Drawdy's extension storage (`kv-storage`) a moment after you change them, and come back the next time the extension starts.
 - Dither Studio is adapted from dotscreen, a personal project of the author.
 
