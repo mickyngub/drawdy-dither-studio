@@ -1,7 +1,7 @@
 {
     "driverId": "mickyngub.dither-studio",
     "driverName": "Dither Studio",
-    "driverVersion": "1.0.0",
+    "driverVersion": "1.0.1",
     "description": "Upload an image, or drop or paste one, and turn it into a halftone dot field to place on the board. Draw it as dots or pixels, dithered with Floyd–Steinberg, Bayer 4, Bayer 8, blue noise or a hard threshold, with circle or square dots. The pixel style can keep the image's own colours. Tune grid, cell and dot size, vignette, posterize, levels, gamma, floor, ceiling and softness, then pick ink and paper colours.",
     "icon": "icon.svg",
     "main": "main.js",
