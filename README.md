@@ -2,6 +2,8 @@
 
 Give any photo or graphic a halftone or pixel-art look. Upload an image, tune the dots or pixels in a live preview, and place the result on your Drawdy board as one image.
 
+![A picture of the Drawdy mascot is uploaded as colour pixels, switched to navy halftone dots, and placed on the board.](https://raw.githubusercontent.com/mickyngub/drawdy-dither-studio/main/docs/media/dither-studio.gif)
+
 ## What it's for
 
 - **Posters, covers and moodboards** with a retro print or newspaper feel.
